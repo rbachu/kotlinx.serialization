@@ -13,14 +13,18 @@ import kotlin.jvm.JvmField
 
 internal fun <T> Json.readJson(element: JsonElement, deserializer: DeserializationStrategy<T>): T {
     val input = when (element) {
-        is JsonObject -> JsonTreeInput(this, element)
-        is JsonArray -> JsonTreeListInput(this, element)
-        is JsonLiteral, JsonNull -> JsonPrimitiveInput(this, element as JsonPrimitive)
+        is JsonObject -> JsonTreeInput(this, element, DescriptorSchemaCache())
+        is JsonArray -> JsonTreeListInput(this, element, DescriptorSchemaCache())
+        is JsonLiteral, JsonNull -> JsonPrimitiveInput(this, element as JsonPrimitive, DescriptorSchemaCache())
     }
     return input.decode(deserializer)
 }
 
-private sealed class AbstractJsonTreeInput(override val json: Json, open val obj: JsonElement) : NamedValueDecoder(),
+private sealed class AbstractJsonTreeInput(
+    override val json: Json,
+    open val obj: JsonElement,
+    protected val schemaCache: DescriptorSchemaCache
+) : NamedValueDecoder(),
     JsonInput {
 
     override val context: SerialModule
@@ -46,13 +50,13 @@ private sealed class AbstractJsonTreeInput(override val json: Json, open val obj
     override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
         val currentObject = currentObject()
         return when (desc.kind) {
-            StructureKind.LIST, is PolymorphicKind -> JsonTreeListInput(json, cast(currentObject))
+            StructureKind.LIST, is PolymorphicKind -> JsonTreeListInput(json, cast(currentObject), schemaCache)
             StructureKind.MAP -> json.selectMapMode(
                 desc,
-                { JsonTreeMapInput(json, cast(currentObject)) },
-                { JsonTreeListInput(json, cast(currentObject)) }
+                { JsonTreeMapInput(json, cast(currentObject), schemaCache) },
+                { JsonTreeListInput(json, cast(currentObject), schemaCache) }
             )
-            else -> JsonTreeInput(json, cast(currentObject))
+            else -> JsonTreeInput(json, cast(currentObject), schemaCache)
         }
     }
 
@@ -92,7 +96,8 @@ private sealed class AbstractJsonTreeInput(override val json: Json, open val obj
     override fun decodeTaggedString(tag: String) = getValue(tag).content
 }
 
-private class JsonPrimitiveInput(json: Json, override val obj: JsonPrimitive) : AbstractJsonTreeInput(json, obj) {
+private class JsonPrimitiveInput(json: Json, override val obj: JsonPrimitive, schemaCache: DescriptorSchemaCache) :
+    AbstractJsonTreeInput(json, obj, schemaCache) {
 
     init {
         pushTag(PRIMITIVE_TAG)
@@ -104,7 +109,8 @@ private class JsonPrimitiveInput(json: Json, override val obj: JsonPrimitive) : 
     }
 }
 
-private open class JsonTreeInput(json: Json, override val obj: JsonObject) : AbstractJsonTreeInput(json, obj) {
+private open class JsonTreeInput(json: Json, override val obj: JsonObject, schemaCache: DescriptorSchemaCache) :
+    AbstractJsonTreeInput(json, obj, schemaCache) {
     private var position = 0
 
     override fun decodeElementIndex(desc: SerialDescriptor): Int {
@@ -115,6 +121,14 @@ private open class JsonTreeInput(json: Json, override val obj: JsonObject) : Abs
             }
         }
         return CompositeDecoder.READ_DONE
+    }
+
+    override fun elementName(desc: SerialDescriptor, index: Int): String {
+        val mainName = desc.getElementName(index)
+        if (!configuration.supportAlternateNames) return mainName
+        val alternativeNamesMap = schemaCache.getOrPut(desc, JsonAlternativeNamesKey, desc::buildAlternativeNamesMap)
+        val nameInObject = obj.keys.find { it == mainName || alternativeNamesMap[it] == index }
+        return nameInObject ?: mainName
     }
 
     override fun currentElement(tag: String): JsonElement = obj.getValue(tag)
@@ -134,7 +148,8 @@ private open class JsonTreeInput(json: Json, override val obj: JsonObject) : Abs
     }
 }
 
-private class JsonTreeMapInput(json: Json, override val obj: JsonObject) : JsonTreeInput(json, obj) {
+private class JsonTreeMapInput(json: Json, override val obj: JsonObject, schemaCache: DescriptorSchemaCache) :
+    JsonTreeInput(json, obj, schemaCache) {
     private val keys = obj.keys.toList()
     private val size: Int = keys.size * 2
     private var position = -1
@@ -161,7 +176,8 @@ private class JsonTreeMapInput(json: Json, override val obj: JsonObject) : JsonT
     }
 }
 
-private class JsonTreeListInput(json: Json, override val obj: JsonArray) : AbstractJsonTreeInput(json, obj) {
+private class JsonTreeListInput(json: Json, override val obj: JsonArray, schemaCache: DescriptorSchemaCache) :
+    AbstractJsonTreeInput(json, obj, schemaCache) {
     private val size = obj.content.size
     private var currentIndex = -1
 
