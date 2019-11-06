@@ -5,7 +5,6 @@
 package kotlinx.serialization.json.internal
 
 import kotlinx.serialization.*
-import kotlinx.serialization.internal.*
 import kotlinx.serialization.json.*
 import kotlinx.serialization.modules.*
 import kotlin.jvm.JvmField
@@ -108,7 +107,7 @@ internal class StreamingJsonInput internal constructor(
     }
 
     private fun SerialDescriptor.getJsonElementIndex(key: String): Int {
-        if (!json.configuration.supportAlternateNames) return this.getElementIndex(key)
+        if (!json.configuration.supportAlternativeNames) return this.getElementIndex(key)
         val alternativeNamesMap = schemaCache.getOrPut(this, JsonAlternativeNamesKey, this::buildAlternativeNamesMap)
         return alternativeNamesMap[key] ?: CompositeDecoder.UNKNOWN_NAME
     }
