@@ -1,4 +1,4 @@
-# Kotlin multiplatform / multi-format serialization reflectionless serialization
+# Kotlin multiplatform / multi-format reflectionless serialization
 
 [![JetBrains incubator project](https://jb.gg/badges/incubator.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
@@ -14,7 +14,7 @@ Kotlin serialization consists of a compiler plugin, that generates visitor code 
 
 ## Table of contents
 
-* [Quick start](#quick-start)
+* [Quick example](#quick-example)
 * [Runtime overview](#runtime-overview)
 * [Current status](#current-project-status)
 * [Library installing](#setup)
@@ -34,7 +34,7 @@ Kotlin serialization consists of a compiler plugin, that generates visitor code 
 * [Instructions for old versions under Kotlin 1.2 and migration guide](docs/old12.md)
 
 
-## Quick start
+## Quick example
 
 ```kotlin
 import kotlinx.serialization.*
@@ -131,7 +131,7 @@ You can setup serialization plugin with the kotlin plugin using [Gradle plugins 
 
 ```gradle
 plugins {
-    id 'org.jetbrains.kotlin.multiplatform' version '1.3.60' // or kotlin plugin
+    id 'org.jetbrains.kotlin.multiplatform' version '1.3.60' // or any other kotlin plugin
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.3.60'
 }
 ```
@@ -225,19 +225,7 @@ Ensure the proper version of Kotlin and serialization version:
 </properties>
 ```
 
-Include kotlinx bintray repository for library:
-
-```xml
-<repositories>
-    <repository>
-        <id>bintray-kotlin-kotlinx</id>
-        <name>bintray</name>
-        <url>https://kotlin.bintray.com/kotlinx</url>
-    </repository>
-</repositories>
-```
-
-You can also use JCenter.
+You can also use JCenter or `https://kotlin.bintray.com/kotlinx` Bintray repository.
 
 Add serialization plugin to Kotlin compiler plugin:
 

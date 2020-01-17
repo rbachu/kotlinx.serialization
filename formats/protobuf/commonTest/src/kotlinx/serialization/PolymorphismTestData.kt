@@ -33,12 +33,6 @@ open class PolyBase(@ProtoId(1) val id: Int) {
 @Serializable
 data class PolyDerived(@ProtoId(2) val s: String) : PolyBase(1)
 
-val BaseAndDerivedModule = SerializersModule {
-    polymorphic(PolyBase::class, PolyBase.serializer()) {
-        PolyDerived::class with PolyDerived.serializer()
-    }
-}
-
 @Serializable
 abstract class SimpleAbstract
 

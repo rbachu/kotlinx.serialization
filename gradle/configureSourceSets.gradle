@@ -40,7 +40,6 @@ kotlin {
         commonMain {
             dependencies {
                 api 'org.jetbrains.kotlin:kotlin-stdlib-common'
-//                api project(":kotlinx-serialization-runtime")
             }
         }
 
