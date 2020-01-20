@@ -9,7 +9,7 @@ Kotlin serialization consists of a compiler plugin, that generates visitor code 
  runtime library with core serialization API and JSON format, and support libraries with ProtoBuf, CBOR and properties formats.
 
 * Supports Kotlin classes marked as `@Serializable` and standard collections.
-* Provides JSON, CBOR, and Protobuf formats.
+* Provides JSON, [CBOR](formats/README.md#CBOR), and [Protobuf](formats/README.md#ProtoBuf) formats.
 * Complete multiplatform support: JVM, JS and Native.
 
 ## Table of contents
@@ -90,7 +90,7 @@ Example projects on JVM are available for [Gradle](examples/example-jvm/build.gr
 
 ### Gradle
 
-You have to add the serialization plugin as the other [compiler plugins](https://kotlinlang.org/docs/reference/compiler-plugins.html):
+You have to add the serialization plugin as the other [compiler plugins](https://kotlinlang.org/docs/reference/compiler-plugins.html) and apply it:
 
 ```gradle
 buildscript {
@@ -98,16 +98,10 @@ buildscript {
     repositories { jcenter() }
 
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
     }
 }
-```
 
-Don't forget to apply the plugin:
-
-```gradle
-apply plugin: 'kotlin' // or 'kotlin-multiplatform' for multiplatform projects
 apply plugin: 'kotlinx-serialization'
 ```
 
@@ -120,7 +114,6 @@ repositories {
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.14.0" // JVM dependency
 }
 ```
@@ -131,7 +124,6 @@ You can setup serialization plugin with the kotlin plugin using [Gradle plugins 
 
 ```gradle
 plugins {
-    id 'org.jetbrains.kotlin.multiplatform' version '1.3.60' // or any other kotlin plugin
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.3.60'
 }
 ```
