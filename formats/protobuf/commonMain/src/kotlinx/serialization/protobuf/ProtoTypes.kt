@@ -26,5 +26,6 @@ internal fun extractParameters(desc: SerialDescriptor, index: Int, zeroBasedDefa
 
 public class ProtobufDecodingException(message: String) : SerializationException(message)
 
-public fun getProtoId(desc: SerialDescriptor, index: Int): Int?
+@Suppress("DEPRECATION_ERROR")
+internal fun getProtoId(desc: SerialDescriptor, index: Int): Int?
         = desc.findAnnotation<ProtoId>(index)?.id ?: desc.findAnnotation<SerialId>(index)?.id
